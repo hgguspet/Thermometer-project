@@ -1,19 +1,48 @@
 <?php
 
 REQUIRE "db_connect.php";
+REQUIRE 'sensitive_data.php';
 
-//read values from url
-if (isset($_GET['temp']) && isset($_GET['hum'])) {
-  echo "Read from URL: " . $_GET['temp'] . " " . $_GET['hum'] . "<br>";
-  $temp = $_GET['temp'];
-  $hum = $_GET['hum'];
-} else {
-  echo "Temperature or humidity data not provided.";
-  exit();
+
+
+
+
+
+// die in case of connection error
+if(!$conn) {
+  die("Database connection failed " . $conn ->connection_error);
 }
 
 
-$sql = "INSERT INTO readings (temp, hum) VALUES (?,?)";
+
+// Get values from the URL
+if (isset($_GET['temp'], $_GET['hum'], $_GET['key']) && is_numeric($_GET['temp']) && is_numeric($_GET['hum'])) {
+    $temp = $_GET['temp'];
+    $hum = $_GET['hum'];
+    $key = $_GET['key'];
+} else {
+    echo "Temperature or humidity data not provided or non-numeric.";
+    exit();
+}
+
+
+$sum = $temp + $hum;
+$message = mb_convert_encoding((string)$sum, 'UTF-8', 'auto');
+
+$hash = hash_hmac('sha256', $message, $postpwd);
+
+
+if (hash_equals($hash, $key)) {
+  echo "Authentic request";
+}
+else {
+  echo "Request unauthorized";
+}
+
+
+
+// update the bufferTable with the new data
+$sql = "INSERT INTO $bufferTable (temp, hum) VALUES (?,?)";
 
 $stmt = $conn->prepare($sql);
 

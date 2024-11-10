@@ -1,9 +1,12 @@
 <?php
 REQUIRE "db_connect.php";
-
+REQUIRE 'sensitive_data.php';
 $read_ammout = 3;
 
-$sql = "SELECT * FROM readings ORDER BY date_of_creation DESC LIMIT 10"; 
+
+
+$table = $bufferTable;
+$sql = "SELECT * FROM $table ORDER BY date_of_creation DESC LIMIT 10"; 
 
 $result = $conn->query($sql);
 

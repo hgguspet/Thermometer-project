@@ -2,12 +2,23 @@
 <html>
   <head>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel = "stylesheet" href = "styles/dataPage.css">
   </head>
   <body>
-
-    <canvas id="tempChart" style="width:100%;max-width:600px"></canvas>
-    <canvas id="humChart" style="width:100%;max-width:600px"></canvas>   
-
+    <select id="analysisTimeframe">
+      <option value="day">Day</option>
+      <option value="week">Week</option>
+      <option value="month">Month</option>
+    </select>
+    
+    <div class = "graphContainer">
+      <div class = "graphObjectContainer">
+        <canvas id="tempChart"></canvas>
+      </div>
+      <div class = "graphObjectContainer">  
+        <canvas id="humChart" style="width:100%"></canvas>   
+      </div>
+    </div>
     <script src="/scripts/show_data.js"></script>
     </body>
 </html>

@@ -1,14 +1,30 @@
 
-//define charts
+// define charts
 let tempChart;
 let humChart;
 
+// timeframe drop down object
+const timeframe = document.getElementById('analysisTimeframe');
+
+// define data object
 let data = {
   temp: [],
   hum: [],
   date: [],
 };
 
+
+
+timeframe.addEventListener('change', function() {
+  const value = timeframe.value;
+  console.log(value);
+
+});
+
+
+/**
+ * @brief function to fetch data from the server and store it in the data object 
+ */
 function fetchData() {
   fetch('/scripts/read_data.php')
     .then(response => response.json())
@@ -20,9 +36,17 @@ function fetchData() {
     .catch(error => console.error("Error fetching data:", error));
 }
 
-function drawTempGraph() {
+
+
+/**
+ * @brief function to draw / update the temp line graph
+ * @param data data object fetched from the mysql database using the fetchData() function
+ */
+function drawTempGraph(data) {
+  // check if graph already exists
   if (!tempChart) {  
-    tempChart = new Chart("tempChart", {  
+    tempChart = new Chart("tempChart", {
+      // graph config
       type: "line",
       data: {
         labels: data.date,  
@@ -47,7 +71,7 @@ function drawTempGraph() {
             type: 'category',
             title: {
               display: true,
-              text: 'Timestamp',
+               text: 'Timestamp',
             },
             reverse: true,
           },
@@ -62,6 +86,7 @@ function drawTempGraph() {
         }
       }
     });
+    // if the object exists, update it
   } else {
     tempChart.data.labels = data.date;
     tempChart.data.datasets[0].data = data.temp;
@@ -69,9 +94,15 @@ function drawTempGraph() {
   }
 }
 
-function drawHumGraph() {
+
+/**
+ * @brief function to draw / update the temp line graph
+ * @param data data object fetched from the mysql database using the fetchData() function
+ */
+function drawHumGraph(data) {
   if (!humChart) {  
-    humChart = new Chart("humChart", {        
+    humChart = new Chart("humChart", {
+      // graph config
       type: "line",
       data: {
         labels: data.date,
@@ -111,6 +142,7 @@ function drawHumGraph() {
         }
       }
     });
+    //if the object exists update it
   } else {
     humChart.data.labels = data.date;
     humChart.data.datasets[0].data = data.hum;
@@ -118,11 +150,14 @@ function drawHumGraph() {
   }
 }
 
-
+/**
+ * @brief function to update the graphs shown on the website
+ * @requires data object
+ */
 function update() {
   fetchData();
-  drawTempGraph();
-  drawHumGraph();
+  drawTempGraph(data);
+  drawHumGraph(data);
 }
 
 setInterval(update, 1500);

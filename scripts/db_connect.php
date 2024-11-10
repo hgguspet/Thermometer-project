@@ -1,16 +1,16 @@
 <?php
 
+REQUIRE 'sensitive_data.php';
+
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$servername = "localhost";
-$username = "fireproof";
-$password = "mysqlpass";
-$database = "thermometer_data";
+
 
 // Create connection
-$conn = mysqli_connect($servername, $username, $password, $database);
+$conn = mysqli_connect($servername, $username, $mysqlpwd, $database);
 
 // Check connection (disabled since the extra echos interfer with returning a json)
 //if (!$conn) {
