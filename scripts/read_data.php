@@ -8,7 +8,7 @@ if (!$conn) {
     die("Database connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT * FROM $bufferTable ORDER BY date_of_creation DESC LIMIT 15"; 
+$sql = "SELECT * FROM $bufferTable ORDER BY date DESC LIMIT 15"; 
 
 $result = $conn->query($sql);
 

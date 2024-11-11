@@ -60,7 +60,7 @@ function fetchData() {
       if (Array.isArray(fetchedData)) {
         data.date = fetchedData.map(entry => {
           // Check if date_of_creation or reading_time exist and format them accordingly
-          let datePart = entry.date_of_creation || entry.reading_time;
+          let datePart = entry.date || entry.reading_time;
           if (datePart) {
             // If date is provided without time, append "00:00:00"
             return datePart.includes(" ") ? datePart : `${datePart} 00:00:00`;

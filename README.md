@@ -1,7 +1,13 @@
 # Thermometer-project
+### Made by GustavPetterssonBjorklund as an assignment for Hitachigymnasiet vasteras
 
-### REQUIREMENTS
-#### SERVER
+### OBS!
+ - The webserver is made in an arch linux enviornment and it's highly recommended to use the same if you're setting this up on your local system
+ - The setup guide is far from comprehensive, if you find something critical missing, please make an issue :D
+
+
+## REQUIREMENTS
+### SERVER
  - apache
  - mysql 
  - php
@@ -9,11 +15,7 @@
 ### Thermometer 
  - github : https://github.com/hgguspet/Thermometer-project-sensor
 
-### Required setup in local enviornment
-#### The following will be a setup guide for arch as that is the os this project was made in
 
- - setup a Cron Job with crontab -e and add the line "0 * * * * php home/<username>/Thermometer-project/scripts/update_hourly_avg.php"
- - setup apache
 
 ### Setup mysql (required)
 1. Make a new mysql database, default name is thermometer_data
@@ -84,9 +86,13 @@ $postpwd = "<salt for HMAC hasing>";
 ?>
 ```
 
-### OBS!
- - The webserver is made in an arch linux env and it's highly recommended to use the same if you're setting this up on your local system
- - The setup guide is far from comprehensive, if you find something critical missing, please make an issue :D
+### Additional setup required in the local enviornment
+#### The following will be a setup guide for arch as that is the os this project was made in
+
+ - setup a Cron Job with crontab -e and add the line "0 * * * * php home/<username>/Thermometer-project/scripts/update_hourly_avg.php"
+ - setup apache
+
+
 
 
  ### Credits:
