@@ -24,7 +24,7 @@ $message = number_format($sum, 2, '.', '');  // Format as float with 2 decimal p
 // Generate the HMAC hash
 $hash = hash_hmac('sha256', $message, $postpwd);
 
-echo "hello world!";
+
 // Check the provided key
 if (hash_equals($hash, $key)) {
   echo "Authentic request<br>";
