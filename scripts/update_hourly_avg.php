@@ -9,7 +9,7 @@ if (!$conn) {
 }
 
 $sql = "
-INSERT INTO hourly_avg (avg_temp, avg_hum, reading_time)
+INSERT INTO $hourlyTable (avg_temp, avg_hum, reading_time)
 SELECT 
     AVG(temp) AS avg_temp,
     AVG(hum) AS avg_hum,
