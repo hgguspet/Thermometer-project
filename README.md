@@ -18,6 +18,7 @@
 
 
 ### Setup mysql (required)
+#### Make sure to use the same names for the table columns or you will need to edit the source code
 1. Make a new mysql database, default name is thermometer_data
 ```sql
 CREATE DATABASE thermometer_data;
