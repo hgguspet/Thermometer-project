@@ -13,6 +13,60 @@ body {
   background-attachment: fixed;
 }
 
+ul {
+  list-style: none;
+  background-color: #063970;
+}
+
+ul li {
+  display: inline-block;
+  position: relative;
+}
+
+ul li a {
+  display: block;
+  padding: 20px 20px;
+  color: white;
+  text-align: center;
+  font-size: 3rem;
+  text-decoration: none;
+}
+
+
+ul li button {
+  display: block;
+  padding: 20px 20px;
+  color: black;
+  text-align: center;
+  font-size: 3rem;
+  text-decoration: none;
+  width: 100%;
+}
+
+
+ul li ul.dropdown button {
+  display: block;
+  
+  border: none;
+}
+
+ul li ul.dropdown {
+  width: 100%;
+  background: #22438C;
+  position: absolute;
+  z-index: 1000;
+  display: none;
+  
+}
+
+ul li a:hover {
+  color: #154c79;
+}
+
+ul li:hover ul.dropdown {
+  display: block;
+}
+
 .page-container {
   display: flex;
   align-items: center;
@@ -28,6 +82,7 @@ body {
   flex-wrap: wrap;
   height: cover;
 }
+
 
 .graphObjectContainer {
   width: 100%;

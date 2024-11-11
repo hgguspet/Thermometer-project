@@ -5,12 +5,18 @@
     <link rel = "stylesheet" href = "styles/dataPage.css">
   </head>
   <body>
-    <select id="analysisTimeframe">
-      <option value="day">Day</option>
-      <option value="week">Week</option>
-      <option value="month">Month</option>
-    </select>
-    
+
+
+    <ul>
+      <li>
+        <a href="#">Graph read mode &#129171;</a>
+        <ul class = "dropdown">
+          <button onclick="setBufferRead()">Live feed</button>
+          <button onclick="setDailyAvgRead()">Daily avg</button>
+        </ul>
+        </li>
+    </ul>
+
     <div class = "graphContainer">
       <div class = "graphObjectContainer">
         <canvas id="tempChart"></canvas>

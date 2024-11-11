@@ -3,8 +3,6 @@
 let tempChart;
 let humChart;
 
-// timeframe drop down object
-const timeframe = document.getElementById('analysisTimeframe');
 
 // define data object
 let data = {
@@ -13,25 +11,69 @@ let data = {
   date: [],
 };
 
+// object to show which table the graphs are currently showing data from
+let readFilePaths = {
+  // paths to update functions
+  bufferReadMode: '/scripts/read_data.php',
+  hourlyAvgReadMode : '/scripts/read_hourly_data.php',
+}
+let currentReadFilePath = readFilePaths.hourlyAvgReadMode;
 
 
-timeframe.addEventListener('change', function() {
-  const value = timeframe.value;
-  console.log(value);
+// dropdown buttons to swap read mode
+function setBufferRead() {
+  currentReadFilePath = readFilePaths.bufferReadMode;
+  update();
+}
+function setDailyAvgRead() {
+  currentReadFilePath = readFilePaths.hourlyAvgReadMode;
+  update();
+}
 
-});
+
 
 
 /**
- * @brief function to fetch data from the server and store it in the data object 
+ * @brief Fetches data from the server and stores it in the data object.
+ * 
+ * The function retrieves JSON data from the server at the specified path. It maps
+ * the response data to separate arrays for `date`, `temp`, and `hum` within the `data` object.
+ * If `date_of_creation` is not available in an entry, it attempts to use `date` instead.
  */
 function fetchData() {
-  fetch('/scripts/read_data.php')
-    .then(response => response.json())
+  // Initialize data object if not already defined
+  if (typeof data === 'undefined') {
+    data = { date: [], temp: [], hum: [] };
+  }
+
+  fetch(currentReadFilePath)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    })
     .then(fetchedData => {
-      data.date = fetchedData.map(entry => entry.date_of_creation);
-      data.temp = fetchedData.map(entry => parseFloat(entry.temp));
-      data.hum = fetchedData.map(entry => parseFloat(entry.hum));
+      console.log("Fetched data:", fetchedData); // Debug log to check data structure
+
+      // Ensure the data is in the expected format
+      if (Array.isArray(fetchedData)) {
+        data.date = fetchedData.map(entry => {
+          // Check if date_of_creation or reading_time exist and format them accordingly
+          let datePart = entry.date_of_creation || entry.reading_time;
+          if (datePart) {
+            // If date is provided without time, append "00:00:00"
+            return datePart.includes(" ") ? datePart : `${datePart} 00:00:00`;
+          } else {
+            return "No date available";
+          }
+        });
+
+        data.temp = fetchedData.map(entry => parseFloat(entry.temp || entry.avg_temp || 0));
+        data.hum = fetchedData.map(entry => parseFloat(entry.hum || entry.avg_hum || 0));
+      } else {
+        console.error("Fetched data is not in the expected array format");
+      }
     })
     .catch(error => console.error("Error fetching data:", error));
 }
@@ -73,7 +115,7 @@ function drawTempGraph(data) {
               display: true,
                text: 'Timestamp',
             },
-            reverse: true,
+            reverse: false,
           },
           y: {
             min: 0,
@@ -129,11 +171,11 @@ function drawHumGraph(data) {
               display: true,
               text: 'Timestamp',
             },
-            reverse: true,
+            reverse: false,
           },
           y: {
             min: 0,
-            max: 35,
+            max: 100,
             title: {
               display: true,
               text: 'Humitity'

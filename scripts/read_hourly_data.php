@@ -8,7 +8,8 @@ if (!$conn) {
     die("Database connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT * FROM $bufferTable ORDER BY date_of_creation DESC LIMIT 15"; 
+
+$sql = "SELECT * FROM $hourlyTable ORDER BY reading_time DESC LIMIT 24"; 
 
 $result = $conn->query($sql);
 
@@ -22,14 +23,11 @@ if ($result && $result->num_rows > 0) {
 
 }
 
-//reverse the arrray to make it go the correct way on the graph
-$reversedData = array_reverse($data);
-
 
 // Close the connection
 $conn->close();
 
 
-echo json_encode($reversedData)
+echo json_encode(array_reverse($data))
 ?>
 
