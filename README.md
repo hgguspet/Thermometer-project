@@ -6,19 +6,23 @@
  - The setup guide is far from comprehensive, if you find something critical missing, please make an issue :D
 
 
-## REQUIREMENTS
+## REQUIREMENTS (brief)
 ### SERVER
  - apache
  - mysql 
  - php
-
-### Thermometer 
+### Thermometer (required to post data)
+#### Thermometer:
  - github : https://github.com/hgguspet/Thermometer-project-sensor
+#### Thermometer requirements:
+ - Arduino-HMAC-SHA256, required my Thermometer : https://github.com/GustavPetterssonBjorklund/Arduino-HMAC-SHA256.git
+ - ArduinoBearSSL, required by Arduino-HMAC-SHA256 : https://github.com/arduino-libraries/ArduinoBearSSL.git
+#### A setup guide for the Thermometer can be found on it's github page
 
 
 
 ### Setup mysql (required)
-#### Make sure to use the same names for the table columns or you will need to edit the source code
+#### !Make sure to use the same names for the table columns or you will need to edit the source code!
 1. Make a new mysql database, default name is thermometer_data
 ```sql
 CREATE DATABASE thermometer_data;
