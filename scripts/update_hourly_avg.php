@@ -14,13 +14,13 @@ SELECT
     AVG(temp) AS avg_temp,
     AVG(hum) AS avg_hum,
     -- Construct reading_time from date and hour for unique hourly entries
-    TIMESTAMP(DATE(date_of_creation), MAKETIME(HOUR(date_of_creation), 0, 0)) AS reading_time
+    TIMESTAMP(DATE(date), MAKETIME(HOUR(date), 0, 0)) AS reading_time
 FROM 
-    readings
+    $bufferTable 
 WHERE 
-    date_of_creation >= NOW() - INTERVAL 1 DAY  -- Last 24 hours
+    date >= NOW() - INTERVAL 1 DAY  -- Last 24 hours
 GROUP BY 
-    DATE(date_of_creation), HOUR(date_of_creation)
+    DATE(date), HOUR(date)
 ON DUPLICATE KEY UPDATE
     avg_temp = VALUES(avg_temp),
     avg_hum = VALUES(avg_hum),
