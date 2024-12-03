@@ -131,6 +131,8 @@ void setup() {
 
 ///@brief keep updating the remote db every 5000 ms
 void loop() {
+
+
   setTempHum(temp, hum);
   String hashHex = getHashHex(temp, hum, secretKey);
   int httpCode = performGetRequest(serverUrl, temp, hum, hashHex);
