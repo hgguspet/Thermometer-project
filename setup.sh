@@ -11,11 +11,15 @@ MAGENTA="\e[35m"
 RESET="\e[0m"
 
 CONFIG_FILE="proj_config.conf"
-UPDATED=false
+PHP_INI_FILE="/etc/php/php.ini"
 
-# List of required packages
-REQUIRED_PACKAGES=("npm" "openssh" "nodejs")
-REQUIRED_NPM_LIBRARIES=("express" "cors")
+
+# Runtime variables
+UPDATED=false
+ 
+# List of required packages (check for their commands, not the package itself)
+REQUIRED_PACKAGES=("npm" "ssh" "node" "php")  # We now check for 'ssh' instead of 'openssh'
+REQUIRED_NPM_LIBRARIES=("express" "cors" "child_process" "mysql")
 
 # ASCII Art Header
 print_header() {
@@ -155,6 +159,11 @@ install_npm_dependencies() {
     fi
 }
 
+
+
+
+
+
 # Function to display help
 print_help() {
     echo -e "${CYAN}Usage:${RESET} $0 [options]"
@@ -167,109 +176,145 @@ print_help() {
     echo -e "  sudo ./setup.sh        # Run the script without updating the configuration"
 }
 
-# Check if running as root
-if [ "$EUID" -ne 0 ]; then
-    echo -e "${RED}Error: This script must be run as root or using sudo.${RESET}"
-    echo -e "${YELLOW}Please re-run as: ${CYAN}sudo $0${RESET}"
-    exit 1
-fi
+# Function to handle flags and parameters
+handle_flags() {
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            --conf)
+                check_and_update_config 
+                shift
+                ;;
+            --help | -h)
+                print_help
+                exit 0
+                ;;
+            *)
+                echo -e "${RED}Unknown option: $1${RESET}"
+                print_help
+                exit 1
+                ;;
+        esac
+    done
+}
 
-# Check for "--conf" flag to update config
-UPDATE_CONFIG=false
 
-if [[ "$@" == *"--conf"* ]]; then
-    UPDATE_CONFIG=true
-elif [[ "$@" == *"--help"* || "$@" == *"--h"* ]]; then 
-    print_help
-    exit
-fi
+# Function to enable MySQL extensions in php.ini
+enable_mysql_extensions() {
+    # Check if php.ini exists
+    if [[ ! -f "$PHP_INI_FILE" ]]; then
+        echo -e "${RED}Error: php.ini file not found at $PHP_INI_FILE${RESET}"
+        return 1
+    fi
 
-# Header
-print_header
+    # Enable mysqli extension
+    if ! grep -q "^extension=mysqli" "$PHP_INI_FILE"; then
+        echo -e "${YELLOW}Enabling mysqli extension...${RESET}"
+        sudo sed -i 's/^;extension=mysqli/extension=mysqli/' "$PHP_INI_FILE"
+        echo -e "${GREEN}mysqli extension enabled successfully.${RESET}"
+    else
+        echo -e "${GREEN}mysqli extension is already enabled.${RESET}"
+    fi
 
-check_conf_file() {
-    # Handle Configuration File
-    if [ -f "$CONFIG_FILE" ]; then
-        echo -e "${CYAN}Configuration file $CONFIG_FILE exists.${RESET}"
+    # Enable pdo_mysql extension
+    if ! grep -q "^extension=pdo_mysql" "$PHP_INI_FILE"; then
+        echo -e "${YELLOW}Enabling pdo_mysql extension...${RESET}"
+        sudo sed -i 's/^;extension=pdo_mysql/extension=pdo_mysql/' "$PHP_INI_FILE"
+        echo -e "${GREEN}pdo_mysql extension enabled successfully.${RESET}"
+    else
+        echo -e "${GREEN}pdo_mysql extension is already enabled.${RESET}"
+    fi
 
-        # Show current configuration
-        echo -e "${CYAN}Current Configuration:${RESET}"
-        cat "$CONFIG_FILE"
+    echo -e "${GREEN}MySQL extensions enabled successfully!${RESET}"
+}
 
-        # Ask user if they want to update it
-        if $UPDATE_CONFIG; then
-            echo -e "${YELLOW}Updating configuration...${RESET}"
-        else
-            echo -e "${CYAN}Loading existing configuration.${RESET}"
-            source "$CONFIG_FILE"
-            CONFIG_MESSAGE="${CYAN}Configuration loaded successfully!${RESET}"
+# Function to check if the configuration file exists and update it if necessary
+check_and_update_config() {
+    # Load the current configuration
+    load_config
+
+    # Display current configuration
+    echo -e "${CYAN}Current Configuration:${RESET}"
+    display_current_config
+
+    # Ask if the user wants to update the configuration
+    if [ "$UPDATED" = true ]; then
+        read -p "Would you like to update it? (y/n): " update_choice
+        if [[ "$update_choice" =~ ^[Yy]$ ]]; then
             clear
-            print_header
-            echo -e "$CONFIG_MESSAGE"
-            echo -e "${YELLOW}Database User:${RESET} ${CYAN}$DBUSER${RESET}"
-            echo -e "${YELLOW}Database Password:${RESET} ${RED}[hidden]${RESET}"
-            echo -e "${YELLOW}Service Name:${RESET} ${CYAN}$SERVICE_NAME${RESET}"
-            echo -e "${YELLOW}Web Port:${RESET} ${CYAN}$WEB_PORT${RESET}"
-            echo -e "${YELLOW}Node Backend Port:${RESET} ${CYAN}$NODE_PORT${RESET}"
-            print_footer
-
-            return
+            echo -e "${YELLOW}Updating configuration...${RESET}"
+            
+            # Prompt for all config values, using defaults where applicable
+            prompt_and_update "DBUSER" "Enter the database user" "$DBUSER"
+            prompt_and_update "DBPASS" "Enter the database password" "$DBPASS"
+            prompt_and_update "SERVICE_NAME" "Enter the service name" "$SERVICE_NAME"
+            prompt_and_update "WEB_PORT" "Enter the web port" "$WEB_PORT"
+            prompt_and_update "NODE_PORT" "Enter the node backend port" "$NODE_PORT"
+            prompt_and_update "BUFFER_TABLE" "Enter the buffer table name" "$BUFFER_TABLE"
+            prompt_and_update "HOURLY_TABLE" "Enter the hourly average table name" "$HOURLY_TABLE"
+            
+            # Save the updated configuration to the file
+            update_config_file
+        else
+            echo -e "${CYAN}No changes made. Keeping the current configuration.${RESET}"
         fi
     else
-        echo "Configuration file $CONFIG_FILE not found. Creating a new one..."
-        touch "$CONFIG_FILE"
+        echo -e "${CYAN}No updates required. Using current configuration.${RESET}"
+    fi
+}
+
+# Function to load configuration from the file
+load_config() {
+    if [ -f "$CONFIG_FILE" ]; then
+        echo -e "${CYAN}Loading configuration from $CONFIG_FILE...${RESET}"
+        # Read the config file and assign values to variables
+        while IFS='=' read -r key value; do
+            case "$key" in
+                "DBUSER") DBUSER="$value" ;;
+                "DBPASS") DBPASS="$value" ;;
+                "SERVICE_NAME") SERVICE_NAME="$value" ;;
+                "WEB_PORT") WEB_PORT="$value" ;;
+                "NODE_PORT") NODE_PORT="$value" ;;
+                "BUFFER_TABLE") BUFFER_TABLE="$value" ;;
+                "HOURLY_TABLE") HOURLY_TABLE="$value" ;;
+            esac
+        done < "$CONFIG_FILE"
+        echo -e "${GREEN}Configuration loaded successfully!${RESET}"
+    else
+        echo -e "${RED}Configuration file $CONFIG_FILE not found. Creating a new one...${RESET}"
         UPDATED=true
     fi
+}
 
-    # Prompt for missing or default values, updating only if needed
-    prompt_and_update() {
-        local var_name=$1
-        local prompt=$2
-        local default_value=$3
-        local current_value=${!var_name}
+# Function to display the current configuration
+display_current_config() {
+    echo -e "${CYAN}Current Configuration:${RESET}"
+    echo -e "${YELLOW}Database User:${RESET} ${CYAN}$DBUSER${RESET}"
+    echo -e "${YELLOW}Database Password:${RESET} ${RED}[hidden]${RESET}"
+    echo -e "${YELLOW}Service Name:${RESET} ${CYAN}$SERVICE_NAME${RESET}"
+    echo -e "${YELLOW}Web Port:${RESET} ${CYAN}$WEB_PORT${RESET}"
+    echo -e "${YELLOW}Node Backend Port:${RESET} ${CYAN}$NODE_PORT${RESET}"
+    echo -e "${YELLOW}Buffer Table:${RESET} ${CYAN}$BUFFER_TABLE${RESET}"
+    echo -e "${YELLOW}Hourly Table:${RESET} ${CYAN}$HOURLY_TABLE${RESET}"
+}
 
-        if [ -z "$current_value" ]; then
-            read -p "$prompt [default: $default_value]: " input_value
-            eval "$var_name=${input_value:-$default_value}"
-            UPDATED=true
-        fi
-    }
+# Function to prompt for missing or default values and update the config
+prompt_and_update() {
+    local var_name=$1
+    local prompt=$2
+    local default_value=$3
+    local current_value=${!var_name}
 
-    # Load existing values
-    DBUSER=""
-    DBPASS=""
-    SERVICE_NAME=""
-    WEB_PORT=""
-    NODE_PORT=""
-    data_entry_art
-
-    # Prompt for config values
-    prompt_and_update "DBUSER" "Enter the database user" "dbuser"
-
-    if [ -z "$DBPASS" ]; then
-        while true; do
-            read -sp "Enter the database password: " dbpass1
-            echo
-            read -sp "Re-enter the database password: " dbpass2
-            echo
-            if [ "$dbpass1" == "$dbpass2" ]; then
-                DBPASS="$dbpass1"
-                UPDATED=true
-                break
-            else
-                echo "Passwords do not match. Please try again."
-            fi
-        done
+    # Show the default value in the prompt if the current value is empty
+    if [ -z "$current_value" ]; then
+        read -p "$prompt [default: $default_value]: " input_value
+        eval "$var_name=${input_value:-$default_value}"
     fi
+}
 
-    prompt_and_update "SERVICE_NAME" "Enter the service name" "thermometer-web-server"
-    prompt_and_update "WEB_PORT" "Enter the web port" "80"
-    prompt_and_update "NODE_PORT" "Enter the node backend port" "5000"
-
-    # Save updated values back to the configuration file if any changes were made
-    if [ "$UPDATED" = true ]; then
-        echo "Saving updated values to $CONFIG_FILE..."
-        cat > "$CONFIG_FILE" <<EOF
+# Function to update the configuration file
+update_config_file() {
+    echo "Saving updated values to $CONFIG_FILE..."
+    cat > "$CONFIG_FILE" <<EOF
 # Configuration file for the Thermometer Project
 # Generated by the setup script
 # Modify these values manually or run the script to update them.
@@ -284,34 +329,36 @@ SERVICE_NAME="$SERVICE_NAME"  # The name of the web service
 # Network configuration
 WEB_PORT="$WEB_PORT"        # The port used for the web server
 NODE_PORT="$NODE_PORT"      # The port used for the backend server
-EOF
-        CONFIG_MESSAGE="${GREEN}Configuration updated successfully!${RESET}"
-    else
-        CONFIG_MESSAGE="${CYAN}Configuration loaded successfully!${RESET}"
-    fi
 
-    # Clear the console and print final configuration
-    clear
-    print_header
-    echo -e "$CONFIG_MESSAGE"
-    echo -e "${YELLOW}Database User:${RESET} ${CYAN}$DBUSER${RESET}"
-    echo -e "${YELLOW}Database Password:${RESET} ${RED}[hidden]${RESET}"
-    echo -e "${YELLOW}Service Name:${RESET} ${CYAN}$SERVICE_NAME${RESET}"
-    echo -e "${YELLOW}Web Port:${RESET} ${CYAN}$WEB_PORT${RESET}"
-    echo -e "${YELLOW}Node Backend Port:${RESET} ${CYAN}$NODE_PORT${RESET}"
-    print_footer
+# Database tables
+BUFFER_TABLE="$BUFFER_TABLE" # The name of the buffer table
+HOURLY_TABLE="$HOURLY_TABLE" # The name of the hourly average table
+EOF
+    echo -e "${GREEN}Configuration updated successfully!${RESET}"
 }
+
+# Check if running as root
+if [ "$EUID" -ne 0 ]; then
+    echo -e "${RED}Error: This script must be run as root or using sudo.${RESET}"
+    echo -e "${YELLOW}Please re-run as: ${CYAN}sudo $0${RESET}"
+    exit 1
+fi
 
 
 clear
-check_conf_file
+
+# Handle flags 
+handle_flags "$@"
+
+
 
 # Dependency Checking (System dependencies)
 print_dependency_check
 check_dependencies
-echo  # Adds a newline after system dependency check
 
 # Now display the npm libraries banner
 print_npm_check_banner
 install_npm_dependencies
 
+# Enable mysql php extension
+enable_mysql_extensions
