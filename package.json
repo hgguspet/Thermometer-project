@@ -1,8 +1,12 @@
 {
+  "name": "backend",
   "dependencies": {
-    "child_process": "^1.0.2",
-    "cors": "^2.8.5",
     "express": "^4.21.1",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "cors": "^2.8.5"
+  },
+  "scripts": {
+    "start": "node server.js --port 3000"
   }
 }
+
