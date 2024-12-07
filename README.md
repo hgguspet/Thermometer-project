@@ -97,7 +97,7 @@ $postpwd = "<salt for HMAC hasing>";
 #### (Recommended)
  - setup a Cron Job with crontab -e and add the line 
 ```crontab
-0 * * * * php home/<username>/Thermometer-project/scripts/update_hourly_avg.php
+30 * * * * php /home/<username>/Thermometer-project/scripts/update_hourly_avg.php
 ```
 
  ### Credits:
