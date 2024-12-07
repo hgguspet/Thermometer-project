@@ -95,7 +95,7 @@ $postpwd = "<salt for HMAC hasing>";
 #### (Required)
  - setup apache
 
-## Example setup
+## Example httpd setup
 
 <details>
   <summary>Httpd conf</summary>
