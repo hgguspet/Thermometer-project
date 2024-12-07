@@ -197,8 +197,8 @@ Include conf/extra/httpd-languages.conf
 Include conf/extra/httpd-userdir.conf
 Include conf/extra/httpd-default.conf
 Include conf/extra/php_module.conf
-```
-</details>
+</details>```
+
 
 #### (Recommended)
  - setup a Cron Job with crontab -e and add the line 
