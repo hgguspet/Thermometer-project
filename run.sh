@@ -21,7 +21,7 @@ NPM_DIR="./web/src/"
  
 # List of required packages (check for their commands, not the package itself)
 REQUIRED_PACKAGES=("npm" "ssh" "node" "php" "mariadb" "expect" "jq" "ufw")  # We now check for 'ssh' instead of 'openssh'
-REQUIRED_NPM_LIBRARIES=("express" "cors" "child_process" "mysql" "serve" )
+REQUIRED_NPM_LIBRARIES=("express" "cors" "child_process" "mysql" "serve" "react" "react-scripts" "react-dom" "axios" "d3")
 
 services=("sshd" "mariadb")
 

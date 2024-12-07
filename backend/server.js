@@ -17,7 +17,7 @@ const db = mysql.createPool({
     user : 'fireproof',
 
     password : 'safepass',
-    database : 'tData',
+    database : 'thermometer_project',
 });
 
 
@@ -64,7 +64,7 @@ app.get('/push_data', (req, res) => {
     }
 
 
-    const query = 'INSERT INTO bufferTable (temperature, humidity) VALUES (?, ?)';
+    const query = 'INSERT INTO buffer_table (temperature, humidity) VALUES (?, ?)';
     db.query(query, [parseFloat(temp), parseFloat(hum)], (err, result) => {
         if (err) {
             console.error('Error inserting data', err);
