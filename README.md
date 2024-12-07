@@ -96,18 +96,27 @@ $postpwd = "<salt for HMAC hasing>";
  - setup apache
 
 ## Example setup
+
 <details>
   <summary>Httpd conf</summary>
 
 ```conf
+# Example configuration content
+Include conf/extra/httpd-languages.conf
+Include conf/extra/httpd-userdir.conf
+Include conf/extra/httpd-default.conf
+Include conf/extra/php_module.conf
 ```
 
 </details>
+
 #### (Recommended)
- - setup a Cron Job with crontab -e and add the line 
-```crontab
+- Set up a Cron Job with `crontab -e` and add the line:
+
+```bash
 30 * * * * php /home/<username>/Thermometer-project/scripts/update_hourly_avg.php
 ```
 
- ### Credits:
- - GustavPetterssonBjorklund - coding
+### Credits:
+- GustavPetterssonBjorklund - coding
+
