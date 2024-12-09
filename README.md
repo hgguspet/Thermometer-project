@@ -2,6 +2,8 @@
 ### Made by GustavPetterssonBjorklund as an assignment for Hitachigymnasiet vasteras
 
 ### OBS!
+ - Information in this readme is not relevant for the react branch of this repo, which has it's own readme. Additionally, The repos linked in this readme are used in the project and have there own readmes that should be used for relevant information instead of this readme.
+
  - The webserver is made in an arch linux enviornment and it's highly recommended to use the same if you're setting this up on your local system
  - The setup guide is far from comprehensive, if you find something critical missing, please make an issue :D
 
